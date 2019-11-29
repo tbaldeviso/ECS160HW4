@@ -1,19 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define file_length 20000
 #define line_length 1024
 
-int get_namepos(char* file_path){   //gets positon of the name column
-    char line[line_length];
+int get_namepos(char *header){   //gets positon of the name column
     char *token;
     char *string;
     int name_pos;
-    FILE* file = fopen(file_path, "r");
 
-    fgets(line, line_length, file);
-    string = strdup(line);
+    string = strdup(header);
     token = strsep(&string, ",");
     name_pos = 0;
     while (token != NULL){
@@ -22,12 +20,11 @@ int get_namepos(char* file_path){   //gets positon of the name column
         token = strsep(&string, ",");
         name_pos++;
     }
-    fclose(file);
     return 0;
 }
 
-char** get_names(char* file_path){
-    FILE* file = fopen(file_path, "r");
+char **get_names(char *file_path){
+    FILE *file = fopen(file_path, "r");
     char **names = malloc(file_length * sizeof(char *));
     int i;
     for (i = 0; i < file_length; ++i) {
@@ -38,8 +35,9 @@ char** get_names(char* file_path){
     char *token;
     char *string;
     int counter = 0;
-    int name_pos = get_namepos(file_path);
-    fgets(line, sizeof(line), file);    //skip header
+    fgets(line, sizeof(line), file);    //header 
+    int name_pos = get_namepos(line);
+
     while(fgets(line, sizeof(line), file)){
         string = strdup(line);
         token = strsep(&string, ",");
@@ -57,15 +55,37 @@ char** get_names(char* file_path){
     return names;
 }
 
+void get_freq(char **names){
+    bool visited[file_length] = { false };
+
+    // Traverse through array elements and
+    // count frequencies
+    int i;
+    for (i = 0; i < file_length; i++) {
+
+        // Skip this element if already processed
+        if (visited[i] == true)
+            continue;
+
+        // Count frequency
+        int counter = 1;
+        int j;
+        for (j = i + 1; j < file_length; j++) {
+            if (strcmp(names[i], names[j]) == 0) {
+                visited[j] = true;
+                counter++;
+            }
+        }
+        printf("%s = %d\n", names[i], counter);
+    }
+}
+
 int main(int argc, char **argv) {   //for now puts the names in a array of strings
     char **names;
     names = get_names(argv[1]);
+    get_freq(names);
 
     int i;
-    for (i = 0; i < 11329; ++i) {
-        printf("%s\n", names[i]);
-    }
-
     for (i = 0; i < file_length; ++i) {
         free(names[i]);
     }
