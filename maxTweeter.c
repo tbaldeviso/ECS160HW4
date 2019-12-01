@@ -44,11 +44,13 @@ int get_namepos(char *header){   //gets positon of the name column
     token = strsep(&string, ",");
     name_pos = 0;
     while (token != NULL){
-        if (strcmp(token, "name") == 0 )
+        if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0)
             return name_pos;
         token = strsep(&string, ",");
         name_pos++;
     }
+    printf("No header");
+    exit(0);
     return 0;
 }
 
@@ -65,11 +67,15 @@ char **get_names(char *file_path, int line_count){
     char *string;
     int counter = 0;
     fgets(line, sizeof(line), file);    //header
+    if (strchr(line, '\n') == NULL || line[0] != '\n') {   // checks if line is bigger than line_length or blank line
+        printf("Invalid line\n");
+        exit(0);
+    }
     int name_pos = get_namepos(line);
 
     while(fgets(line, sizeof(line), file)){
 
-        if (strchr(line, '\n') == NULL) { // checks if line is bigger than line_length
+        if (strchr(line, '\n') == NULL || line[0] == '\n') { // checks if line is bigger than line_length or blank line
             if ((counter+1) != line_count){// last line does not have a new line
                 printf("Invalid line\n");
                 exit(0);
