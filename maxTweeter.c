@@ -88,12 +88,8 @@ void get_freq(char **names){
                 counter++;
             }
         }
-        // get 1st tweeter
-        if (num_tweeters == 0) {
-            strcpy(tweeters[num_tweeters].name,names[i]);
-            tweeters[num_tweeters].count = counter;
-            num_tweeters++;
-        } else if (num_tweeters >= 10) {
+        // insert tweeter if in top 10
+        if (num_tweeters >= 10) {
             // sort first 10 tweeters
             if (num_tweeters == 10) {
                 for (int a = 0; a < 10; ++a) {
@@ -117,7 +113,7 @@ void get_freq(char **names){
                     break;
                 }
             }
-        } else { // get next 9 tweeters
+        } else { // get first 10 tweeters
             strcpy(tweeters[num_tweeters].name,names[i]);
             tweeters[num_tweeters].count = counter;
             num_tweeters++;
