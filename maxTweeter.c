@@ -16,7 +16,7 @@ int get_line_count(char *filename){
     long int lines = 0;
 
     if ( file == NULL ) {
-        printf("Invalid file");
+        printf("Invalid file open");
         exit(0);
     }
 
@@ -27,7 +27,7 @@ int get_line_count(char *filename){
     fclose(file);
 
     if (lines > file_length){
-        printf("Invalid file");
+        printf("Invalid file length");
         exit(0);
     }
 
@@ -67,8 +67,8 @@ char **get_names(char *file_path, int line_count){
     char *string;
     int counter = 0;
     fgets(line, sizeof(line), file);    //header
-    if (strchr(line, '\n') == NULL || line[0] != '\n') {   // checks if line is bigger than line_length or blank line
-        printf("Invalid line\n");
+    if (strchr(line, '\n') == NULL || line[0] == '\n') {   // checks if line is bigger than line_length or blank line
+        printf("Invalid line header\n");
         exit(0);
     }
     int name_pos = get_namepos(line);
@@ -77,7 +77,7 @@ char **get_names(char *file_path, int line_count){
 
         if (strchr(line, '\n') == NULL || line[0] == '\n') { // checks if line is bigger than line_length or blank line
             if ((counter+1) != line_count){// last line does not have a new line
-                printf("Invalid line\n");
+                printf("Invalid line line\n");
                 exit(0);
             }
         }
