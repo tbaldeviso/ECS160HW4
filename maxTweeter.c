@@ -6,17 +6,20 @@
 #define file_length 20000
 #define line_length 1024
 
+int token_count;
+int line_count;
+
 typedef struct tweeter{
     char name[line_length];
     int count;
 }tweeter;
 
-int get_line_count(char *filename){
+void get_line_count(char *filename){
     FILE *file = fopen(filename, "r");
-    long int lines = 0;
+    int lines = 0;
 
     if ( file == NULL ) {
-        printf("Invalid file open");
+        printf("Invalid Input Format : Could no open file.\n");
         exit(0);
     }
 
@@ -27,34 +30,65 @@ int get_line_count(char *filename){
     fclose(file);
 
     if (lines > file_length){
-        printf("Invalid file length");
+        printf("Invalid Input Format : more than 20000 lines\n");
         exit(0);
     }
 
-    return lines;
+    line_count = lines;
 }
 
 
 int get_namepos(char *header){   //gets positon of the name column
     char *token;
     char *string;
+    int counter;
     int name_pos;
 
     string = strdup(header);
     token = strsep(&string, ",");
-    name_pos = 0;
+    name_pos = -1;
+    counter = 0;
     while (token != NULL){
         if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0)
-            return name_pos;
+            name_pos = counter;
         token = strsep(&string, ",");
-        name_pos++;
+        counter++;
     }
-    printf("No header");
-    exit(0);
-    return 0;
+    if (name_pos == -1){ // no name column found
+        printf("Invalid Input Format : Invalid header\n");
+        exit(0);
+    }
+    token_count = counter+1;
+    return name_pos;
 }
 
-char **get_names(char *file_path, int line_count){
+void line_check(char *line, int line_num){
+    char *token;
+    char *string;
+    int counter;
+
+    if (strchr(line, '\n') == NULL || line[0] == '\n') { // checks if line is bigger than line_length or blank line
+        if (line_num != line_count){// last line does not have a new line
+            printf("Invalid Input Format : Invalid line format\n");
+            exit(0);
+        }
+    }
+
+    string = strdup(line);
+    token = strsep(&string, ",");
+
+    counter = 1;
+    while(token != NULL){
+        token = strsep(&string, ",");
+        counter++;
+    }
+    if (counter != token_count){
+        printf("Invalid Input Format: Invalid line format\n");
+        exit(0);
+    }
+}
+
+char **get_names(char *file_path){
     FILE *file = fopen(file_path, "r");
     char **names = malloc(line_count * sizeof(char *));
     int i;
@@ -68,20 +102,13 @@ char **get_names(char *file_path, int line_count){
     int counter = 0;
     fgets(line, sizeof(line), file);    //header
     if (strchr(line, '\n') == NULL || line[0] == '\n') {   // checks if line is bigger than line_length or blank line
-        printf("Invalid line header\n");
+        printf("Invalid Input Format : Invalid line format\n");
         exit(0);
     }
     int name_pos = get_namepos(line);
 
     while(fgets(line, sizeof(line), file)){
-
-        if (strchr(line, '\n') == NULL || line[0] == '\n') { // checks if line is bigger than line_length or blank line
-            if ((counter+1) != line_count){// last line does not have a new line
-                printf("Invalid line line\n");
-                exit(0);
-            }
-        }
-
+        line_check(line, counter+1);
         string = strdup(line);
         token = strsep(&string, ",");
         int j = 0;
@@ -111,7 +138,7 @@ void sort (tweeter list[], int size) {
     }
 }
 
-void get_freq(char **names, int line_count){
+void get_freq(char **names){
     bool visited[file_length] = { false };
     bool sorted = false;
     tweeter tweeters[10];
@@ -169,11 +196,10 @@ void get_freq(char **names, int line_count){
 
 int main(int argc, char **argv) {
     char **names;
-    int line_count;
 
-    line_count = get_line_count(argv[1]);
-    names = get_names(argv[1], line_count);
-    get_freq(names, line_count);
+    get_line_count(argv[1]);
+    names = get_names(argv[1]);
+    get_freq(names);
 
     int i;
     for (i = 0; i < line_count; ++i) {
