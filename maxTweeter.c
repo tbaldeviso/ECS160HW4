@@ -98,16 +98,23 @@ char **get_names(char *file_path, int line_count){
     return names;
 }
 
+void sort (tweeter list[], int size) {
+    int a,b;
+    for (a = 0; a < size; ++a) {
+        for (b = a + 1; b < size; ++b) {
+            if (list[a].count < list[b].count) {
+                tweeter temp = list[a];
+                list[a] = list[b];
+                list[b] = temp;
+            }
+        }
+    }
+}
+
 void get_freq(char **names, int line_count){
     bool visited[file_length] = { false };
-    tweeter tweeters[11];
-
-    /*
-    tweeter **tweeters = malloc(11*sizeof(tweeter*));
-    for (int t = 0; t < 11; ++t) {
-        tweeters[t] = malloc(sizeof(tweeter));
-        memset(tweeters[t].name,'\0',line_length);
-    } */
+    bool sorted = false;
+    tweeter tweeters[10];
 
     // Traverse through array elements and
     // count frequencies
@@ -128,31 +135,20 @@ void get_freq(char **names, int line_count){
             }
         }
         // insert tweeter if in top 10
-        if (num_tweeters >= 10) {
-            // sort first 11 tweeters
-            if (num_tweeters == 10) {
-                int a;
-                int b;
-                for (a = 0; a < 10; ++a) {
-                    for (b = a + 1; b < 10; ++b) {
-                        if (tweeters[a].count < tweeters[b].count) {
-                            tweeter temp = tweeters[a];
-                            tweeters[a] = tweeters[b];
-                            tweeters[b] = temp;
-                        }
-                    }
-                }
-            }
+        if (num_tweeters == 10) {
+            // sort first 10 tweeters
+            if (!sorted)
+                sort(tweeters,10);
             // insert tweeter
             int c;
             int q;
             for (c = 0; c < 10; c++) {
                 if (counter > tweeters[c].count) {
-                    for (q = 9; q >= c; q--)
+                    for (q = 8; q >= c; q--)
                         tweeters[q+1] = tweeters[q];
                     strcpy(tweeters[c].name,names[i]);
                     tweeters[c].count = counter;
-                    num_tweeters++;
+                    sorted = true;
                     break;
                 }
             }
@@ -162,8 +158,11 @@ void get_freq(char **names, int line_count){
             num_tweeters++;
         }
     }
+    // sort list if finished before 10
+    if (num_tweeters < 10)
+        sort(tweeters,num_tweeters);
 
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < num_tweeters-1; i++) {
         printf("%s = %d\n", tweeters[i].name, tweeters[i].count);
     }
 }
