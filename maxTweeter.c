@@ -17,6 +17,7 @@ int get_line_count(char *filename){
 
     if ( file == NULL ) {
         printf("Invalid file");
+        exit(0);
     }
 
     while (EOF != (fscanf(file, "%*[^\n]"), fscanf(file,"%*c"))) //does not store in memory
@@ -27,6 +28,7 @@ int get_line_count(char *filename){
 
     if (lines > file_length){
         printf("Invalid file");
+        exit(0);
     }
 
     return lines;
@@ -70,6 +72,7 @@ char **get_names(char *file_path, int line_count){
         if (strchr(line, '\n') == NULL) { // checks if line is bigger than line_length
             if ((counter+1) != line_count){// last line does not have a new line
                 printf("Invalid line\n");
+                exit(0);
             }
         }
 
