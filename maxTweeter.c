@@ -8,6 +8,7 @@
 
 int token_count;
 int line_count;
+bool quotes = false;
 
 typedef struct tweeter{
     char name[line_length];
@@ -19,7 +20,7 @@ void get_line_count(char *filename){
     int lines = 0;
 
     if ( file == NULL ) {
-        printf("Invalid Input Format : Could no open file.\n");
+        printf("Invalid Input Format : Could not open file.\n");
         exit(0);
     }
 
@@ -49,8 +50,11 @@ int get_namepos(char *header){   //gets positon of the name column
     name_pos = -1;
     counter = 0;
     while (token != NULL){
-        if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0)
+        if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0){
+            if (strcmp(token, "\"name\"") == 0)
+                quotes = true;
             name_pos = counter;
+        }
         token = strsep(&string, ",");
         counter++;
     }
@@ -88,6 +92,18 @@ void line_check(char *line, int line_num){
     }
 }
 
+char *quoteCheck(char *name){
+    char *temp = malloc(line_length * sizeof(char));
+    int i;
+
+    for(i = 0; i < strlen(name)-1; i++) {
+        temp[i] = name[i+1];
+    }
+    temp[strlen(name)-2] = '\0';
+
+    return temp;
+}
+
 char **get_names(char *file_path){
     FILE *file = fopen(file_path, "r");
     char **names = malloc(line_count * sizeof(char *));
@@ -119,7 +135,14 @@ char **get_names(char *file_path){
             token = strsep(&string, ",");
             j++;
         }
-        strcpy(names[counter++], token);
+        char *name;
+        if (quotes){
+            name = quoteCheck(token);
+        }
+        else  {
+            name = token;
+        }
+        strcpy(names[counter++], name);
     }
     fclose(file);
     return names;
