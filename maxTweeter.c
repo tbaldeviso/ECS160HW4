@@ -6,6 +6,11 @@
 #define file_length 20000
 #define line_length 1024
 
+typedef struct tweeter{
+    char name[line_length];
+    int count;
+}tweeter;
+
 int get_namepos(char *header){   //gets positon of the name column
     char *token;
     char *string;
@@ -57,10 +62,17 @@ char **get_names(char *file_path){
 
 void get_freq(char **names){
     bool visited[file_length] = { false };
-
+    tweeter tweeters[11];
+/*
+    tweeter **tweeters = malloc(11*sizeof(tweeter*));
+    for (int t = 0; t < 11; ++t) {
+        tweeters[t] = malloc(sizeof(tweeter));
+        memset(tweeters[t].name,'\0',line_length);
+    }
+*/
     // Traverse through array elements and
     // count frequencies
-    int i;
+    int i, num_tweeters = 0;
     for (i = 0; i < file_length; i++) {
 
         // Skip this element if already processed
@@ -76,7 +88,44 @@ void get_freq(char **names){
                 counter++;
             }
         }
-        printf("%s = %d\n", names[i], counter);
+        // get 1st tweeter
+        if (num_tweeters == 0) {
+            strcpy(tweeters[num_tweeters].name,names[i]);
+            tweeters[num_tweeters].count = counter;
+            num_tweeters++;
+        } else if (num_tweeters >= 10) {
+            // sort first 10 tweeters
+            if (num_tweeters == 10) {
+                for (int a = 0; a < 10; ++a) {
+                    for (int b = a + 1; b < 10; ++b) {
+                        if (tweeters[a].count < tweeters[b].count) {
+                            tweeter temp = tweeters[a];
+                            tweeters[a] = tweeters[b];
+                            tweeters[b] = temp;
+                        }
+                    }
+                }
+            }
+            // insert tweeter
+            for (int c = 0; c < 10; c++) {
+                if (counter > tweeters[c].count) {
+                    for (int q = 9; q >= c; q--)
+                        tweeters[q+1] = tweeters[q];
+                    strcpy(tweeters[c].name,names[i]);
+                    tweeters[c].count = counter;
+                    num_tweeters++;
+                    break;
+                }
+            }
+        } else { // get next 9 tweeters
+            strcpy(tweeters[num_tweeters].name,names[i]);
+            tweeters[num_tweeters].count = counter;
+            num_tweeters++;
+        }
+    }
+
+    for (int i = 0; i < 10; i++) {
+        printf("%s = %d\n", tweeters[i].name, tweeters[i].count); 
     }
 }
 
