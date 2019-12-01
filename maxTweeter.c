@@ -42,6 +42,7 @@ void get_line_count(char *filename){
 int get_namepos(char *header){   //gets positon of the name column
     char *token;
     char *string;
+    bool name_check = false;
     int counter;
     int name_pos;
 
@@ -51,9 +52,14 @@ int get_namepos(char *header){   //gets positon of the name column
     counter = 0;
     while (token != NULL){
         if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0){
+            if (name_check == true){
+                printf("Invalid Input Format : Invalid header\n");
+                exit(0);
+            }
             if (strcmp(token, "\"name\"") == 0)
                 quotes = true;
             name_pos = counter;
+            name_check = true;
         }
         token = strsep(&string, ",");
         counter++;
