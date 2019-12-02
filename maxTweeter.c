@@ -9,6 +9,7 @@
 int token_count;
 int line_count;
 bool quotes = false;
+bool newline = false;
 
 typedef struct tweeter{
     char name[line_length];
@@ -51,13 +52,16 @@ int get_namepos(char *header){   //gets positon of the name column
     name_pos = -1;
     counter = 0;
     while (token != NULL){
-        if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0){
+        if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0
+            || strcmp(token, "name\n") == 0 || strcmp(token, "\"name\"\n") == 0){
             if (name_check == true){
                 printf("Invalid Input Format : Invalid header\n");
                 exit(0);
             }
-            if (strcmp(token, "\"name\"") == 0)
+            if (strcmp(token, "\"name\"") == 0 || strcmp(token, "\"name\"\n") == 0)
                 quotes = true;
+            if (strcmp(token, "name\n") == 0 || strcmp(token, "\"name\"\n") == 0)
+                newline = true;
             name_pos = counter;
             name_check = true;
         }
@@ -102,10 +106,20 @@ char *quoteCheck(char *name){
     char *temp = malloc(line_length * sizeof(char));
     int i;
 
-    for(i = 0; i < strlen(name)-1; i++) {
+    for(i = 0; i < strlen(name)-2; i++) {
         temp[i] = name[i+1];
     }
-    temp[strlen(name)-2] = '\0';
+
+    return temp;
+}
+
+char *newlineCheck(char *name){
+    char *temp = malloc(line_length * sizeof(char));
+    int i;
+
+    for(i = 0; i < strlen(name)-1; i++) {
+        temp[i] = name[i];
+    }
 
     return temp;
 }
@@ -142,13 +156,24 @@ char **get_names(char *file_path){
             j++;
         }
         char *name;
-        if (quotes){
+        if (quotes) {
+            if (token[0] != '\"' && token[strlen(token)-1] != '\"'){
+                printf("Invalid Input Format: Mismatched quotes\n");
+                exit(0);
+            }
             name = quoteCheck(token);
-        }
-        else  {
+        } else {
+            if (token[0] == '\"' && token[strlen(token)-1] == '\"'){
+                printf("Invalid Input Format: Mismatched quotes\n");
+                exit(0);
+            }
             name = token;
         }
+        if (newline)
+            name = newlineCheck(name);
+            
         strcpy(names[counter++], name);
+        free(name);
     }
     fclose(file);
     return names;
@@ -191,10 +216,13 @@ void get_freq(char **names){
             }
         }
         // insert tweeter if in top 10
-        if (num_tweeters == 10) {
+        if (num_tweeters >= 10) {
             // sort first 10 tweeters
-            if (!sorted)
+            if (!sorted) {
                 sort(tweeters,10);
+                num_tweeters++;
+                sorted = true;
+            }
             // insert tweeter
             int c;
             int q;
@@ -204,7 +232,6 @@ void get_freq(char **names){
                         tweeters[q+1] = tweeters[q];
                     strcpy(tweeters[c].name,names[i]);
                     tweeters[c].count = counter;
-                    sorted = true;
                     break;
                 }
             }
@@ -218,8 +245,9 @@ void get_freq(char **names){
     if (num_tweeters < 10)
         sort(tweeters,num_tweeters);
 
+    // print output
     for (i = 0; i < num_tweeters-1; i++) {
-        printf("%s = %d\n", tweeters[i].name, tweeters[i].count);
+        printf("%s: %d\n", tweeters[i].name, tweeters[i].count);
     }
 }
 
