@@ -6,11 +6,13 @@
 #define file_length 20000
 #define line_length 1024
 
+// Globals to pass between functions
 int token_count;
 int line_count;
 bool quotes = false;
 bool newline = false;
 
+// Object to hold name and number of tweets
 typedef struct tweeter{
     char name[line_length];
     int count;
@@ -20,15 +22,15 @@ void get_line_count(char *filename){
     FILE *file = fopen(filename, "r");
     int lines = 0;
 
-    if ( file == NULL ) {
+    if (file == NULL) {
         printf("Invalid Input Format : Could not open file.\n");
         exit(0);
     }
 
-    while (EOF != (fscanf(file, "%*[^\n]"), fscanf(file,"%*c"))) //does not store in memory
+    // Does not store in memory
+    while (EOF != (fscanf(file, "%*[^\n]"), fscanf(file,"%*c")))
         ++lines;
 
-    //printf("Lines : %li\n", lines);
     fclose(file);
 
     if (lines > file_length){
@@ -39,8 +41,8 @@ void get_line_count(char *filename){
     line_count = lines;
 }
 
-
-int get_namepos(char *header){   //gets positon of the name column
+// Get position of name column
+int get_namepos(char *header){
     char *token;
     char *string;
     bool name_check = false;
@@ -68,7 +70,8 @@ int get_namepos(char *header){   //gets positon of the name column
         token = strsep(&string, ",");
         counter++;
     }
-    if (name_pos == -1){ // no name column found
+    // No name column found
+    if (name_pos == -1){
         printf("Invalid Input Format : Invalid header\n");
         exit(0);
     }
@@ -80,9 +83,10 @@ void line_check(char *line, int line_num){
     char *token;
     char *string;
     int counter;
-
-    if (strchr(line, '\n') == NULL || line[0] == '\n') { // checks if line is bigger than line_length or blank line
-        if (line_num != line_count){// last line does not have a new line
+    // Checks if line is bigger than line_length or blank line
+    if (strchr(line, '\n') == NULL || line[0] == '\n'){ 
+        // lLast line does not have a new line
+        if (line_num != line_count){
             printf("Invalid Input Format : Invalid line format\n");
             exit(0);
         }
@@ -114,6 +118,7 @@ char *quoteCheck(char *name){
 }
 
 char *newlineCheck(char *name){
+    // Invalid if null char detected when expected newline char
     if (name[strlen(name)-1] == '\0'){
         printf("Invalid Input Format\n");
         exit(0);
@@ -121,7 +126,7 @@ char *newlineCheck(char *name){
     char *temp = malloc(line_length * sizeof(char));
     int i;
 
-    for(i = 0; i < strlen(name)-1; i++) {
+    for(i = 0; i < strlen(name)-1; i++){
         temp[i] = name[i];
     }
 
@@ -132,7 +137,7 @@ char **get_names(char *file_path){
     FILE *file = fopen(file_path, "r");
     char **names = malloc(line_count * sizeof(char *));
     int i;
-    for (i = 0; i < line_count; ++i) {
+    for (i = 0; i < line_count; ++i){
         names[i] = (char *)malloc(line_length);
     }
 
@@ -140,8 +145,10 @@ char **get_names(char *file_path){
     char *token;
     char *string;
     int counter = 0;
-    fgets(line, sizeof(line), file);    //header
-    if (strchr(line, '\n') == NULL || line[0] == '\n') {   // checks if line is bigger than line_length or blank line
+    // Header
+    fgets(line, sizeof(line), file);
+    // Checks if line is bigger than line_length or blank line
+    if (strchr(line, '\n') == NULL || line[0] == '\n'){  
         printf("Invalid Input Format : Invalid line format\n");
         exit(0);
     }
@@ -160,7 +167,9 @@ char **get_names(char *file_path){
             j++;
         }
         char *name;
-        if (quotes) {
+        // Check if names are quoted or not
+        if (quotes){
+            // Also check for " and "\n
             if ((token[0] != '\"' && token[strlen(token)-1] != '\"')
                 || strcmp(token, "\"") == 0 || strcmp(token, "\"\n") == 0){
                 printf("Invalid Input Format: Mismatched quotes\n");
@@ -174,6 +183,7 @@ char **get_names(char *file_path){
             }
             name = token;
         }
+        // Remove newline from name
         if (newline)
             name = newlineCheck(name);
             
@@ -183,11 +193,12 @@ char **get_names(char *file_path){
     return names;
 }
 
+// Sort tweeters in descending order
 void sort (tweeter list[], int size) {
     int a,b;
-    for (a = 0; a < size; ++a) {
-        for (b = a + 1; b < size; ++b) {
-            if (list[a].count < list[b].count) {
+    for (a = 0; a < size; ++a){
+        for (b = a + 1; b < size; ++b){
+            if (list[a].count < list[b].count){
                 tweeter temp = list[a];
                 list[a] = list[b];
                 list[b] = temp;
@@ -204,7 +215,7 @@ void get_freq(char **names){
     // Traverse through array elements and
     // count frequencies
     int i, num_tweeters = 0;
-    for (i = 0; i < line_count; i++) {
+    for (i = 0; i < line_count; i++){
 
         // Skip this element if already processed
         if (visited[i] == true)
@@ -213,25 +224,25 @@ void get_freq(char **names){
         // Count frequency
         int counter = 1;
         int j;
-        for (j = i + 1; j < line_count; j++) {
-            if (strcmp(names[i], names[j]) == 0) {
+        for (j = i + 1; j < line_count; j++){
+            if (strcmp(names[i], names[j]) == 0){
                 visited[j] = true;
                 counter++;
             }
         }
-        // insert tweeter if in top 10
-        if (num_tweeters >= 10) {
-            // sort first 10 tweeters
-            if (!sorted) {
+        // Insert tweeter if in top 10
+        if (num_tweeters >= 10){
+            // Sort first 10 tweeters
+            if (!sorted){
                 sort(tweeters,10);
                 num_tweeters++;
                 sorted = true;
             }
-            // insert tweeter
+            // Insert tweeter
             int c;
             int q;
-            for (c = 0; c < 10; c++) {
-                if (counter > tweeters[c].count) {
+            for (c = 0; c < 10; c++){
+                if (counter > tweeters[c].count){
                     for (q = 8; q >= c; q--)
                         tweeters[q+1] = tweeters[q];
                     strcpy(tweeters[c].name,names[i]);
@@ -239,17 +250,18 @@ void get_freq(char **names){
                     break;
                 }
             }
-        } else { // get first 10 tweeters
+        } else {
+            // Get first 10 tweeters before inserting
             strcpy(tweeters[num_tweeters].name,names[i]);
             tweeters[num_tweeters].count = counter;
             num_tweeters++;
         }
     }
-    // sort list if finished before 10
+    // Sort list if finished before 10
     if (num_tweeters < 10)
         sort(tweeters,num_tweeters);
 
-    // print output
+    // Print output
     for (i = 0; i < num_tweeters-1; i++) {
         printf("%s: %d\n", tweeters[i].name, tweeters[i].count);
     }
