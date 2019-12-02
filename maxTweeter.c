@@ -23,7 +23,7 @@ void get_line_count(char *filename){
     int lines = 0;
 
     if (file == NULL) {
-        printf("Invalid Input Format : Could not open file.\n");
+        printf("Invalid Input Format\n");
         exit(0);
     }
 
@@ -34,7 +34,7 @@ void get_line_count(char *filename){
     fclose(file);
 
     if (lines > file_length){
-        printf("Invalid Input Format : more than 20000 lines\n");
+        printf("Invalid Input Format\n");
         exit(0);
     }
 
@@ -57,7 +57,7 @@ int get_namepos(char *header){
         if (strcmp(token, "name") == 0 || strcmp(token, "\"name\"") == 0
             || strcmp(token, "name\n") == 0 || strcmp(token, "\"name\"\n") == 0){
             if (name_check == true){
-                printf("Invalid Input Format : Invalid header\n");
+                printf("Invalid Input Format\n");
                 exit(0);
             }
             if (strcmp(token, "\"name\"") == 0 || strcmp(token, "\"name\"\n") == 0)
@@ -72,7 +72,7 @@ int get_namepos(char *header){
     }
     // No name column found
     if (name_pos == -1){
-        printf("Invalid Input Format : Invalid header\n");
+        printf("Invalid Input Format\n");
         exit(0);
     }
     token_count = counter+1;
@@ -87,7 +87,7 @@ void line_check(char *line, int line_num){
     if (strchr(line, '\n') == NULL || line[0] == '\n'){ 
         // Last line does not have a new line
         if (line_num != line_count){
-            printf("Invalid Input Format : Invalid line format\n");
+            printf("Invalid Input Format\n");
             exit(0);
         }
     }
@@ -101,7 +101,7 @@ void line_check(char *line, int line_num){
         counter++;
     }
     if (counter != token_count){
-        printf("Invalid Input Format: Invalid line format\n");
+        printf("Invalid Input Format\n");
         exit(0);
     }
 }
@@ -149,7 +149,7 @@ char **get_names(char *file_path){
     fgets(line, sizeof(line), file);
     // Checks if line is bigger than line_length or blank line
     if (strchr(line, '\n') == NULL || line[0] == '\n'){  
-        printf("Invalid Input Format : Invalid line format\n");
+        printf("Invalid Input Format\n");
         exit(0);
     }
     int name_pos = get_namepos(line);
@@ -167,25 +167,29 @@ char **get_names(char *file_path){
             j++;
         }
         char *name;
-        // Check if names are quoted or not
-        if (quotes){
-            // Also check for " and "\n
-            if ((token[0] != '\"' && token[strlen(token)-1] != '\"')
-                || strcmp(token, "\"") == 0 || strcmp(token, "\"\n") == 0){
-                printf("Invalid Input Format: Mismatched quotes\n");
-                exit(0);
-            }
-            name = quoteCheck(token);
-        } else {
-            if (token[0] == '\"' && token[strlen(token)-1] == '\"'){
-                printf("Invalid Input Format: Mismatched quotes\n");
-                exit(0);
-            }
-            name = token;
-        }
         // Remove newline from name
         if (newline)
-            name = newlineCheck(name);
+            name = newlineCheck(token);
+        else
+            name = token;
+        // Check if names are quoted or not
+        if (quotes){
+            if (strlen(name) < 2){
+                printf("Invalid Input Format\n");
+                exit(0);
+            }
+            if ((name[0] != '\"' || name[strlen(name)-1] != '\"')){
+                printf("Invalid Input Format\n");
+                exit(0);
+            }
+            name = quoteCheck(name);
+        } else {
+            if (name[0] == '\"' && name[strlen(name)-1] == '\"'
+                && strlen(name) >= 2){
+                printf("Invalid Input Format\n");
+                exit(0);
+            }
+        }
             
         strcpy(names[counter++], name);
     }
