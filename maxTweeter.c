@@ -157,7 +157,8 @@ char **get_names(char *file_path){
         }
         char *name;
         if (quotes) {
-            if (token[0] != '\"' && token[strlen(token)-1] != '\"'){
+            if (token[0] != '\"' && token[strlen(token)-1] != '\"'
+                || strcmp(token, "\"") == 0 || strcmp(token, "\"\n") == 0){
                 printf("Invalid Input Format: Mismatched quotes\n");
                 exit(0);
             }
@@ -173,7 +174,7 @@ char **get_names(char *file_path){
             name = newlineCheck(name);
             
         strcpy(names[counter++], name);
-        free(name);
+        //free(name);
     }
     fclose(file);
     return names;
