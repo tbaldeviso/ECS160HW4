@@ -85,7 +85,7 @@ void line_check(char *line, int line_num){
     int counter;
     // Checks if line is bigger than line_length or blank line
     if (strchr(line, '\n') == NULL || line[0] == '\n'){ 
-        // lLast line does not have a new line
+        // Last line does not have a new line
         if (line_num != line_count){
             printf("Invalid Input Format : Invalid line format\n");
             exit(0);
