@@ -114,6 +114,10 @@ char *quoteCheck(char *name){
 }
 
 char *newlineCheck(char *name){
+    if (name[strlen(name)-1] == '\0'){
+        printf("Invalid Input Format\n");
+        exit(0);
+    }
     char *temp = malloc(line_length * sizeof(char));
     int i;
 
@@ -174,7 +178,6 @@ char **get_names(char *file_path){
             name = newlineCheck(name);
             
         strcpy(names[counter++], name);
-        //free(name);
     }
     fclose(file);
     return names;
